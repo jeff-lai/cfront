@@ -1,9 +1,9 @@
 <template>
     <div class="header">
         <!-- 第一步 折叠按钮 -->
-<!--        <div class="collapse-btn">-->
-<!--            <i class="el-icon-s-unfold"></i>-->
-<!--        </div>-->
+        <!--        <div class="collapse-btn">-->
+        <!--            <i class="el-icon-s-unfold"></i>-->
+        <!--        </div>-->
         <!-- 第二步 折叠按钮 -->
         <div class="collapse-btn" @click="collapseChage">
             <i v-if="!collapse" class="el-icon-s-fold"></i>
@@ -20,7 +20,7 @@
                         <i class="el-icon-caret-bottom"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item >退出登录</el-dropdown-item>
+                        <el-dropdown-item>退出登录</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
             </div>
@@ -55,7 +55,7 @@
             // 侧边栏折叠
             collapseChage() {
                 this.collapse = !this.collapse;
-                // this.$bus.emit('collapse', this.collapse);
+                this.$bus.emit("collapse", this.collapse);
             },
         },
 
