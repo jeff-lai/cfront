@@ -17,13 +17,64 @@ const routes = [
         children: [
             {
                 path: '/dashboard',
-                name: 'Dashboard',
-                component: () => import('../views/Dashboard.vue')
+                component: () => import('../views/Dashboard.vue'),
+                meta: {requireAuth: false}
             },
             {
-                path:'/pwdsetting',
-                name:'PwdSetting',
-                component:()=>import('../views/PwdSetting')
+                //修改密码
+                path: '/pwdsetting',
+                component: () => import( '../views/PwdSetting.vue'),
+                meta: {requireAuth: false}
+            },
+            {
+                //银证转账
+                path: '/transfer',
+                component: () => import( '../views/Transfer.vue'),
+                meta: {requireAuth: false}
+            },
+            {
+                //银证转账查询
+                path: '/transferquery',
+                component: () => import( '../views/TransferQuery.vue'),
+                meta: {requireAuth: false}
+            },
+
+            {
+                //当日委托
+                path: '/orderquery',
+                component: () => import( '../views/OrderQuery.vue'),
+                meta: {requireAuth: false}
+            },
+            {
+                //当日成交
+                path: '/tradequery',
+                component: () => import( '../views/TradeQuery.vue'),
+                meta: {requireAuth: false}
+            },
+            {
+                //历史委托
+                path: '/hisorderquery',
+                component: () => import( '../views/HisOrderQuery.vue'),
+                meta: {requireAuth: false}
+            },
+            {
+                //历史成交
+                path: '/histradequery',
+                component: () => import( '../views/HisTradeQuery.vue'),
+                meta: {requireAuth: false}
+            },
+
+            {
+                //委买
+                path: '/buy',
+                component: () => import( '../views/Buy.vue'),
+                meta: {requireAuth: false}
+            },
+            {
+                //委卖
+                path: '/sell',
+                component: () => import('../views/Sell.vue'),
+                meta: {requireAuth: false}
             }
         ]
 
@@ -46,6 +97,21 @@ const router = new VueRouter({
     mode: 'history',
     base: process.env.BASE_URL,
     routes
+});
+
+router.beforeEach((to, from, next) => {
+
+    if (to.meta.requiredAuth) {
+        if (Boolean(sessionStorage.getItem(("uid")))) {
+            next();
+        } else {
+            next({
+                path: '/'
+            })
+        }
+    } else {
+        next();
+    }
 });
 
 export default router
