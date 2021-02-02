@@ -1,28 +1,31 @@
 <template xmlns:el-col="http://www.w3.org/1999/html">
     <div class="login-wrap">
-        <el-form class="login-container">
+        <el-form class="login-container" :model="ruleForm" :rules="rules">
             <h3 class="title">用户登录</h3>
-            <el-form-item>
-                <el-input type="text" placeholder="账号"></el-input>
+            <el-form-item prop="uid">
+                <el-input type="text" placeholder="账号" v-model="ruleForm.uid"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input placeholder="密码"  show-password></el-input>
+                <el-input placeholder="密码" show-password v-model="ruleForm.password"></el-input>
             </el-form-item>
             <el-row>
                 <el-col :span="12">
 
                     <el-form-item>
                         <el-row>
-                            <el-input type="text" auto-complete="off" placeholder="验证码"/>
+                            <el-input type="text" auto-complete="off" placeholder="验证码"
+                                      v-model="ruleForm.captcha"
+                                      @keyup.enter.native="submitFrom('ruleForm')"/>
                         </el-row>
                     </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                    <img/>
+                    <img :src="codeImg" @click="getCode()"/>
                 </el-col>
             </el-row>
             <el-form-item>
-                <el-button type="primary" style="width:100%">
+                <el-button type="primary" style="width:100%"
+                           :loading="logining" @click="submitFrom('ruleForm')">
                     登录
                 </el-button>
             </el-form-item>
@@ -31,8 +34,89 @@
 </template>
 
 <script>
+    import {queryCaptcha, login} from "../api/loginApi";
+    import encryptMD5 from 'js-md5';
+
     export default {
-        name: "Login"
+        name: "Login",
+        data() {
+            return {
+                // 1. 提交表格
+                ruleForm: {
+                    uid: '',
+                    password: '',
+                    captcha: '',
+                    captchaId: ''
+                },
+                // 2. 图片验证码
+                codeImg: '',
+                // 3. 限制规则
+                rules: {
+                    uid: [{required: true, message: "请输入账号", trigger: 'blur'}],
+                    password: [{required: true, message: "请输入密码", trigger: 'blur'}],
+                    captcha: [{required: true, message: "请输入验证码", trigger: 'blur'}],
+                },
+                // 4. 防止重复提交
+                //4.防止前端重复提交
+                logining: false,
+
+            }
+        },
+        methods: {
+            queryCaptcha(code, msf, captchaData) {
+                this.ruleForm.captchaId = captchaData.id;
+                this.codeImg = captchaData.imageBase64;
+
+            },
+            // 验证码获取
+            getCode() {
+                queryCaptcha(this.captchaCallback);
+            },
+            //登录回调函数
+            loginCallback(code, msg, acc) {
+                if (code == 2) {
+                    //登录失败
+                    this.$message.error(msg);
+                    this.logining = false;
+                    this.getCode();
+                } else {
+                    //登录成功 uid token
+                    sessionStorage.setItem("uid", acc.uid);
+                    sessionStorage.setItem("token", acc.token);
+                    //显示上次成功登录时间
+                    if (acc.lastLoginDate.length > 1) {
+                        this.$message.success("登录成功,上次登录时间:"
+                            + acc.lastLoginDate + " " + acc.lastLoginTime);
+                    } else {
+                        this.$message.success("登录成功");
+                    }
+                    //跳转主页面
+                    setTimeout(() => {
+                        this.logining = false;
+                        this.$router.push({path : '/dashboard'});
+                        //成交 委托 持仓查询
+
+                    }, 1000);
+
+                }
+            },
+            submitFrom(fromName) {
+                this.$refs[fromName].validate(vaild => {
+                    if (vaild) {
+                        this.logining = true;
+                        login({
+                            uid: this.ruleForm.uid,
+                            password: encryptMD5(this.ruleForm.password),
+                            captcha: this.ruleForm.captcha,
+                            captchaId: this.ruleForm.captchaId,
+                        }, this.loginCallback);
+                    } else {
+                        this.$message.error('数据不能为空');
+                        this.logining = false;
+                    }
+                });
+            }
+        }
     }
 </script>
 
